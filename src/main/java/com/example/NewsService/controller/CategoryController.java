@@ -6,8 +6,10 @@ import com.example.NewsService.dto.UpsertCategoryRequest;
 import com.example.NewsService.mapper.CategoryMapper;
 import com.example.NewsService.model.Category;
 import com.example.NewsService.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,43 +20,38 @@ import org.springframework.web.bind.annotation.*;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    private final CategoryMapper categoryMapper;
-
+    @Operation(summary = "Get all categories")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public ResponseEntity<CategoryListResponse> findAll(@RequestParam int pageNumber, @RequestParam int pageSize){
-        return ResponseEntity.ok(
-                categoryMapper.categoryListToResponseList(
-                        categoryService.findAll(pageNumber, pageSize)
-                )
-        );
+    public CategoryListResponse findAll(Pageable pageable){
+        return categoryService.findAll(pageable);
     }
 
+    @Operation(summary = "Get category by ID")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> findById(@PathVariable long id){
-        return ResponseEntity.ok(
-                categoryMapper.categoryToResponse(categoryService.findById(id))
-        );
+    public CategoryResponse findById(@PathVariable long id){
+        return categoryService.findById(id);
     }
 
+    @Operation(summary = "Create category")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseEntity<CategoryResponse> create(@RequestBody @Valid UpsertCategoryRequest request){
-        Category newCategory = categoryService.save(categoryMapper.requestToCategory(request));
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(categoryMapper.categoryToResponse(newCategory)
-        );
+    public CategoryResponse create(@RequestBody @Valid UpsertCategoryRequest request){
+        return categoryService.save(request);
     }
 
+    @Operation(summary = "Modify category by ID")
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponse> update(@PathVariable long id, @RequestBody @Valid UpsertCategoryRequest request){
-        Category updatedCategory = categoryService.update(categoryMapper.requestToCategory(id, request));
-        return ResponseEntity.ok(
-                categoryMapper.categoryToResponse(updatedCategory)
-        );
+    public CategoryResponse update(@PathVariable long id, @RequestBody @Valid UpsertCategoryRequest request){
+        return categoryService.update(id, request);
     }
 
+    @Operation(summary = "Delete category by ID")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable long id){
+    public void delete(@PathVariable long id){
         categoryService.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }

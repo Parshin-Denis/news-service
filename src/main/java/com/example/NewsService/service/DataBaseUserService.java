@@ -1,11 +1,10 @@
 package com.example.NewsService.service;
 
-import com.example.NewsService.exception.WrongParamRequestException;
 import com.example.NewsService.model.User;
 import com.example.NewsService.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -18,11 +17,8 @@ public class DataBaseUserService implements UserService{
     private final UserRepository userRepository;
 
     @Override
-    public List<User> findAll(int pageNumber, int pageSize) {
-        if (pageNumber < 0 || pageSize < 0){
-            throw new WrongParamRequestException("Значение параметров пагинации не могут быть меньше нуля");
-        }
-        return userRepository.findAll(PageRequest.of(pageNumber, pageSize)).getContent();
+    public List<User> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable).getContent();
     }
 
     @Override

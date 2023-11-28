@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @DecoratedWith(NewsMapperDelegate.class)
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {CommentMapper.class})
 public interface NewsMapper {
 
     News requestToNews(UpsertNewsRequest request);
@@ -33,9 +33,6 @@ public interface NewsMapper {
     default int getCommentsAmount(List<Comment> comments){
         return comments.size();
     };
-
-    @Mapping(source = "comment.user.name", target = "user")
-    CommentResponse commentToResponse(Comment comment);
 
     List<NewsResponse> newsListToResponseList(List<News> newsList);
 

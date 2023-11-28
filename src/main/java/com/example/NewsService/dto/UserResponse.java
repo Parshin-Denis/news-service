@@ -13,4 +13,6 @@ public class UserResponse {
     private String name;
 
     private List<NewsResponse> news = new ArrayList<>();
+
+    private List<CommentResponse> comments = new ArrayList<>();
 }

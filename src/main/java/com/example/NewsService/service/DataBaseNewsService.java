@@ -1,7 +1,9 @@
 package com.example.NewsService.service;
 
 import com.example.NewsService.AOP.CheckUser;
+import com.example.NewsService.dto.NewsListResponse;
 import com.example.NewsService.exception.WrongParamRequestException;
+import com.example.NewsService.mapper.NewsMapper;
 import com.example.NewsService.model.News;
 import com.example.NewsService.model.NewsFilter;
 import com.example.NewsService.repository.NewsRepository;
@@ -9,6 +11,7 @@ import com.example.NewsService.repository.NewsSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -29,11 +32,8 @@ public class DataBaseNewsService implements NewsService{
     }
 
     @Override
-    public List<News> findAll(int pageNumber, int pageSize) {
-        if (pageNumber < 0 || pageSize < 0){
-            throw new WrongParamRequestException("Значение параметров пагинации не могут быть меньше нуля");
-        }
-        return newsRepository.findAll(PageRequest.of(pageNumber, pageSize)).getContent();
+    public List<News> findAll(Pageable pageable) {
+        return newsRepository.findAll(pageable).getContent();
     }
 
     @Override
@@ -49,7 +49,6 @@ public class DataBaseNewsService implements NewsService{
     }
 
     @Override
-    @CheckUser
     public News update(News news) {
         News existedNews = findById(news.getId());
         existedNews.setContent(news.getContent());
@@ -59,7 +58,6 @@ public class DataBaseNewsService implements NewsService{
     }
 
     @Override
-    @CheckUser
     public void deleteById(long id) {
         newsRepository.deleteById(id);
     }

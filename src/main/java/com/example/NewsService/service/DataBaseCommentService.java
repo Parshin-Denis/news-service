@@ -40,7 +40,6 @@ public class DataBaseCommentService implements CommentService{
     }
 
     @Override
-    @CheckUser
     public Comment update(Comment comment) {
         Comment existedComment = findById(comment.getId());
         existedComment.setContent(comment.getContent());
@@ -50,7 +49,6 @@ public class DataBaseCommentService implements CommentService{
     }
 
     @Override
-    @CheckUser
     public void deleteById(long id) {
         commentRepository.deleteById(id);
     }

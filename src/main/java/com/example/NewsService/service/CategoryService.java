@@ -1,17 +1,23 @@
 package com.example.NewsService.service;
 
+import com.example.NewsService.dto.CategoryListResponse;
+import com.example.NewsService.dto.CategoryResponse;
+import com.example.NewsService.dto.UpsertCategoryRequest;
 import com.example.NewsService.model.Category;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface CategoryService {
-    List<Category> findAll(int pageNumber, int pageSize);
+    CategoryListResponse findAll(Pageable pageable);
 
-    Category findById(long id);
+    CategoryResponse findById(long id);
 
-    Category save(Category category);
+    Category getById(long id);
 
-    Category update(Category category);
+    CategoryResponse save(UpsertCategoryRequest request);
+
+    CategoryResponse update(long id, UpsertCategoryRequest request);
 
     void deleteById(long id);
 }

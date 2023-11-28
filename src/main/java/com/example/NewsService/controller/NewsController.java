@@ -1,5 +1,6 @@
 package com.example.NewsService.controller;
 
+import com.example.NewsService.AOP.CheckUser;
 import com.example.NewsService.dto.*;
 import com.example.NewsService.mapper.NewsMapper;
 import com.example.NewsService.model.News;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,67 +32,14 @@ public class NewsController {
 
     @Operation(
             summary = "Get all news",
-            description = "Get all news. Return for each news: ID, Content, UserName, CategoryName, Comments amount"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    content = {
-                            @Content(schema = @Schema(implementation = NewsListResponse.class), mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    content = {
-                            @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")
-                    }
-            )
-    })
-    @GetMapping
-    public ResponseEntity<NewsListResponse> findAll(@RequestParam int pageNumber, @RequestParam int pageSize) {
-        return ResponseEntity.ok(
-                newsMapper.newsListToNewsListResponse(
-                        newsService.findAll(pageNumber, pageSize)
-                )
-        );
-    }
-
-    @Operation(
-            summary = "Get filtered news",
-            description = "Get all news filtered by category and user." +
-                    " Return for each news: ID, Content, UserName, CategoryName, Comments amount"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    content = {
-                            @Content(schema = @Schema(implementation = NewsListResponse.class), mediaType = "application/json")
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    content = {
-                            @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")
-                    }
-            )
-    })
-    @GetMapping("/filter")
-    public ResponseEntity<NewsListResponse> filterBy(@Valid NewsFilter filter) {
-        return ResponseEntity.ok(
-                newsMapper.newsListToNewsListResponse(newsService.filterBy(filter))
-        );
-    }
-
-    @Operation(
-            summary = "Get news by ID",
-            description = "Get news by ID. Return ID, Content, UserName, CategoryName, List of Comments",
+            description = "Get all news. Return for each news: ID, Content, UserName, CategoryName, Comments amount",
             tags = {"news", "id"}
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
                     content = {
-                            @Content(schema = @Schema(implementation = SingleNewsResponse.class), mediaType = "application/json")
+                            @Content(schema = @Schema(implementation = NewsListResponse.class), mediaType = "application/json")
                     }
             ),
             @ApiResponse(
@@ -100,35 +49,51 @@ public class NewsController {
                     }
             )
     })
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public NewsListResponse findAll(Pageable pageable) {
+        return newsMapper.newsListToNewsListResponse(newsService.findAll(pageable));
+    }
+
+    @Operation(summary = "Get filtered news")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/filter")
+    public NewsListResponse filterBy(@Valid NewsFilter filter) {
+        return newsMapper.newsListToNewsListResponse(newsService.filterBy(filter));
+    }
+
+    @Operation(summary = "Get news by ID")
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public ResponseEntity<SingleNewsResponse> findById(@PathVariable long id) {
-        return ResponseEntity.ok(
-                newsMapper.singleNewsToResponse(newsService.findById(id))
-        );
+    public SingleNewsResponse findById(@PathVariable long id) {
+        return newsMapper.singleNewsToResponse(newsService.findById(id));
     }
 
+    @Operation(summary = "Create news")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseEntity<SingleNewsResponse> create(@RequestBody @Valid UpsertNewsRequest request) {
-        News newNews = newsService.update(newsMapper.requestToNews(request));
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(newsMapper.singleNewsToResponse(newNews)
-                );
+    public SingleNewsResponse create(@RequestBody @Valid UpsertNewsRequest request) {
+        News newNews = newsService.save(newsMapper.requestToNews(request));
+        return newsMapper.singleNewsToResponse(newNews);
     }
 
+    @Operation(summary = "Modify news by ID")
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
-    public ResponseEntity<SingleNewsResponse> update(@PathVariable long id,
-                                                     @RequestParam long userId,
-                                                     @RequestBody @Valid UpsertNewsRequest request) {
+    @CheckUser
+    public SingleNewsResponse update(@PathVariable long id,
+                                     @RequestParam long userId,
+                                     @RequestBody @Valid UpsertNewsRequest request) {
         News updatedNews = newsService.update(newsMapper.requestToNews(id, request));
-        return ResponseEntity.ok(
-                newsMapper.singleNewsToResponse(updatedNews)
-        );
+        return newsMapper.singleNewsToResponse(updatedNews);
     }
 
+    @Operation(summary = "Delete news by ID")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable long id, @RequestParam long userId) {
+    @CheckUser
+    public void delete(@PathVariable long id, @RequestParam long userId) {
         newsService.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 
 }

@@ -1,6 +1,8 @@
 package com.example.NewsService.service;
 
 import com.example.NewsService.dto.NewsListResponse;
+import com.example.NewsService.dto.SingleNewsResponse;
+import com.example.NewsService.dto.UpsertNewsRequest;
 import com.example.NewsService.model.News;
 import com.example.NewsService.model.NewsFilter;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +17,9 @@ public interface NewsService {
 
     News findById(long id);
 
-    News save(News news);
+    News save(News news, String userName);
 
-    News update(News news);
+    News update(long id, News news);
 
     void deleteById(long id);
 }

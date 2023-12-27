@@ -1,7 +1,10 @@
 package com.example.NewsService.controller;
 
-import com.example.NewsService.AOP.CheckUser;
-import com.example.NewsService.dto.*;
+import com.example.NewsService.AOP.CheckOwner;
+import com.example.NewsService.dto.ErrorResponse;
+import com.example.NewsService.dto.NewsListResponse;
+import com.example.NewsService.dto.SingleNewsResponse;
+import com.example.NewsService.dto.UpsertNewsRequest;
 import com.example.NewsService.mapper.NewsMapper;
 import com.example.NewsService.model.News;
 import com.example.NewsService.model.NewsFilter;
@@ -15,9 +18,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -72,27 +75,31 @@ public class NewsController {
     @Operation(summary = "Create news")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public SingleNewsResponse create(@RequestBody @Valid UpsertNewsRequest request) {
-        News newNews = newsService.save(newsMapper.requestToNews(request));
-        return newsMapper.singleNewsToResponse(newNews);
+    public SingleNewsResponse create(@AuthenticationPrincipal UserDetails userDetails,
+                                     @RequestBody @Valid UpsertNewsRequest request) {
+        return newsMapper.singleNewsToResponse(
+                newsService.save(
+                        newsMapper.requestToNews(request), userDetails.getUsername()
+                )
+        );
     }
 
     @Operation(summary = "Modify news by ID")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
-    @CheckUser
+    @CheckOwner
     public SingleNewsResponse update(@PathVariable long id,
-                                     @RequestParam long userId,
                                      @RequestBody @Valid UpsertNewsRequest request) {
-        News updatedNews = newsService.update(newsMapper.requestToNews(id, request));
-        return newsMapper.singleNewsToResponse(updatedNews);
+        return newsMapper.singleNewsToResponse(
+                newsService.update(id, newsMapper.requestToNews(request))
+        );
     }
 
     @Operation(summary = "Delete news by ID")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    @CheckUser
-    public void delete(@PathVariable long id, @RequestParam long userId) {
+    @CheckOwner
+    public void delete(@PathVariable long id) {
         newsService.deleteById(id);
     }
 

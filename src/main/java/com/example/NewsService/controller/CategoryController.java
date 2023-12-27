@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +24,7 @@ public class CategoryController {
     @Operation(summary = "Get all categories")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     public CategoryListResponse findAll(Pageable pageable){
         return categoryService.findAll(pageable);
     }
@@ -30,6 +32,7 @@ public class CategoryController {
     @Operation(summary = "Get category by ID")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     public CategoryResponse findById(@PathVariable long id){
         return categoryService.findById(id);
     }
@@ -37,6 +40,7 @@ public class CategoryController {
     @Operation(summary = "Create category")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public CategoryResponse create(@RequestBody @Valid UpsertCategoryRequest request){
         return categoryService.save(request);
     }
@@ -44,6 +48,7 @@ public class CategoryController {
     @Operation(summary = "Modify category by ID")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public CategoryResponse update(@PathVariable long id, @RequestBody @Valid UpsertCategoryRequest request){
         return categoryService.update(id, request);
     }
@@ -51,6 +56,7 @@ public class CategoryController {
     @Operation(summary = "Delete category by ID")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public void delete(@PathVariable long id){
         categoryService.deleteById(id);
     }

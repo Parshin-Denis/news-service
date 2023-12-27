@@ -12,9 +12,9 @@ public interface CommentService {
 
     Comment findById(long id);
 
-    Comment save(Comment comment);
+    Comment save(Comment comment, String userName);
 
-    Comment update(Comment comment);
+    Comment update(long id, Comment comment);
 
     void deleteById(long id);
 }

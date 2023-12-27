@@ -1,6 +1,7 @@
 package com.example.NewsService.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -13,11 +14,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String name;
+
+    private String password;
 
     @OneToMany(mappedBy = "user")
     private List<News> news = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Role> roles = new ArrayList<>();
 }

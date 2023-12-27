@@ -1,7 +1,7 @@
 package com.example.NewsService.controller;
 
 import com.example.NewsService.dto.ErrorResponse;
-import com.example.NewsService.exception.WrongParamRequestException;
+import com.example.NewsService.exception.WrongUserException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -34,8 +34,8 @@ public class ExceptionHandlerController {
                 .body(new ErrorResponse(errorMessage));
     }
 
-    @ExceptionHandler(WrongParamRequestException.class)
-    public ResponseEntity<ErrorResponse> wrongUserId(WrongParamRequestException ex){
+    @ExceptionHandler(WrongUserException.class)
+    public ResponseEntity<ErrorResponse> wrongUserId(WrongUserException ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(ex.getLocalizedMessage()));
     }

@@ -7,9 +7,6 @@ import lombok.Data;
 @Data
 public class UpsertCommentRequest {
 
-    @Positive(message = "Значение ID пользователя должно быть больше нуля")
-    private long userId;
-
     @Positive(message = "Значение ID новости должно быть больше нуля")
     private long newsId;
 

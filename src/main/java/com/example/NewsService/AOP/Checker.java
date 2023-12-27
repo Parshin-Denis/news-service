@@ -1,9 +1,12 @@
 package com.example.NewsService.AOP;
 
-import com.example.NewsService.exception.WrongParamRequestException;
+import com.example.NewsService.controller.NewsController;
+import com.example.NewsService.exception.WrongUserException;
+import com.example.NewsService.model.RoleType;
+import com.example.NewsService.model.User;
 import com.example.NewsService.service.CommentService;
-import com.example.NewsService.service.DataBaseNewsService;
 import com.example.NewsService.service.NewsService;
+import com.example.NewsService.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -23,27 +26,54 @@ public class Checker {
 
     @Autowired
     NewsService newsService;
-
     @Autowired
     CommentService commentService;
+    @Autowired
+    UserService userService;
+    private HttpServletRequest request;
+    private long userId;
+    private long idFromPath;
+
+    @Before("@annotation(CheckOwner)")
+    public void checkBefore(JoinPoint joinPoint) {
+        getRequestParams(joinPoint);
+
+        if (request.getMethod().equals("DELETE") &&
+                (request.isUserInRole(RoleType.ROLE_ADMIN.name()) || request.isUserInRole(RoleType.ROLE_MODERATOR.name()))
+        ) {
+            return;
+        }
+
+        long ownerUserId = joinPoint.getSignature().getDeclaringType().equals(NewsController.class) ?
+                newsService.findById(idFromPath).getUser().getId() :
+                commentService.findById(idFromPath).getUser().getId();
+
+        if (ownerUserId != userId) {
+            throw new WrongUserException("Вы не являетесь создателем контента и поэтому не можете его изменить.");
+        }
+    }
 
     @Before("@annotation(CheckUser)")
-    public void checkBefore(JoinPoint joinPoint) {
+    public void checkUser(JoinPoint joinPoint) {
+        getRequestParams(joinPoint);
+
+        if (request.isUserInRole(RoleType.ROLE_ADMIN.name()) || request.isUserInRole(RoleType.ROLE_MODERATOR.name())) {
+            return;
+        }
+
+        if (userId != idFromPath) {
+            throw new WrongUserException("У вас нет прав для просмотра и изменения данных этого пользователя");
+        }
+    }
+
+    private void getRequestParams(JoinPoint joinPoint) {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
+        request = ((ServletRequestAttributes) requestAttributes).getRequest();
         Map<String, String> pathVariables = (Map<String, String>)
                 request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        Object paramUserId = request.getParameter("userId");
-        long userId = Long.parseLong(paramUserId.toString());
-        long ownerUserId;
-        if (joinPoint.getSignature().getDeclaringType().getSimpleName()
-                .equals(DataBaseNewsService.class.getSimpleName())) {
-            ownerUserId = newsService.findById(Long.parseLong(pathVariables.get("id"))).getId();
-        } else {
-            ownerUserId = commentService.findById(Long.parseLong(pathVariables.get("id"))).getId();
-        }
-        if (ownerUserId != userId){
-            throw new WrongParamRequestException("Введенный пользователь не является создателем контента. Изменение невозможно.");
-        }
+        String userName = request.getUserPrincipal().getName();
+        User user = userService.findUserByName(userName);
+        userId = user.getId();
+        idFromPath = Long.parseLong(pathVariables.get("id"));
     }
 }

@@ -1,8 +1,6 @@
 package com.example.NewsService.service;
 
-import com.example.NewsService.AOP.CheckUser;
 import com.example.NewsService.model.Comment;
-import com.example.NewsService.model.News;
 import com.example.NewsService.repository.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +14,7 @@ import java.util.List;
 public class DataBaseCommentService implements CommentService{
 
     private final CommentRepository commentRepository;
+    private final UserService userService;
 
     @Override
     public List<Comment> findAll() {
@@ -35,16 +34,16 @@ public class DataBaseCommentService implements CommentService{
     }
 
     @Override
-    public Comment save(Comment comment) {
+    public Comment save(Comment comment, String userName) {
+        comment.setUser(userService.findUserByName(userName));
         return commentRepository.save(comment);
     }
 
     @Override
-    public Comment update(Comment comment) {
-        Comment existedComment = findById(comment.getId());
+    public Comment update(long id, Comment comment) {
+        Comment existedComment = findById(id);
         existedComment.setContent(comment.getContent());
         existedComment.setNews(comment.getNews());
-        existedComment.setUser(comment.getUser());
         return commentRepository.save(existedComment);
     }
 

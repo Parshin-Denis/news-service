@@ -18,22 +18,13 @@ public abstract class CommentMapper {
 
     @Autowired
     NewsService newsService;
-    @Autowired
-    UserService userService;
 
     public Comment requestToComment(UpsertCommentRequest request){
         Comment comment = new Comment();
         comment.setContent(request.getContent());
         comment.setNews(newsService.findById(request.getNewsId()));
-        comment.setUser(userService.findById(request.getUserId()));
         return comment;
     };
-
-    public Comment requestToComment(Long commentId, UpsertCommentRequest request){
-        Comment comment = requestToComment(request);
-        comment.setId(commentId);
-        return comment;
-    }
 
     @Mapping(source = "comment.user.name", target = "user")
     public abstract CommentResponse commentToResponse(Comment comment);

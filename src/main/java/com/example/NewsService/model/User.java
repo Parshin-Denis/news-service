@@ -1,7 +1,6 @@
 package com.example.NewsService.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class User {
 
     private String password;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<News> news = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")

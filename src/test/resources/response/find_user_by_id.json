@@ -1,0 +1,43 @@
+{
+  "id": 1,
+  "name": "Admin",
+  "password": "pass",
+  "news": [
+    {
+      "id": 1,
+      "content": "first news",
+      "category": "Politic",
+      "user": "Admin",
+      "commentsAmount": 2
+    },
+    {
+      "id": 2,
+      "content": "second news",
+      "category": "Culture",
+      "user": "Admin",
+      "commentsAmount": 1
+    },
+    {
+      "id": 3,
+      "content": "third news",
+      "category": "Economy",
+      "user": "Admin",
+      "commentsAmount": 0
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "user": "Admin",
+      "content": "comment1"
+    },
+    {
+      "id": 3,
+      "user": "Admin",
+      "content": "comment3"
+    }
+  ],
+  "roles": [
+    "ROLE_ADMIN"
+  ]
+}

@@ -23,6 +23,6 @@ public class News {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "news")
+    @OneToMany(mappedBy = "news", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 }

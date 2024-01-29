@@ -1,0 +1,43 @@
+{
+  "id": 1,
+  "name": "updatedUser",
+  "password": "$2a$12$tnHrTMRhArf8rVyuYYjNmu2jUR.wzApRTXAd7pAT8b82fq4koOJbi",
+  "news": [
+    {
+      "id": 1,
+      "content": "first news",
+      "category": "Politic",
+      "user": "updatedUser",
+      "commentsAmount": 2
+    },
+    {
+      "id": 2,
+      "content": "second news",
+      "category": "Culture",
+      "user": "updatedUser",
+      "commentsAmount": 1
+    },
+    {
+      "id": 3,
+      "content": "third news",
+      "category": "Economy",
+      "user": "updatedUser",
+      "commentsAmount": 0
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "user": "updatedUser",
+      "content": "comment1"
+    },
+    {
+      "id": 3,
+      "user": "updatedUser",
+      "content": "comment3"
+    }
+  ],
+  "roles": [
+    "ROLE_USER"
+  ]
+}

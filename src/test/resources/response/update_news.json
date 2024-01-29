@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "content": "Updated news",
+  "category": "Culture",
+  "user": "Admin",
+  "comments": [
+    {
+      "id": 1,
+      "user": "Admin",
+      "content": "comment1"
+    },
+    {
+      "id": 2,
+      "user": "User",
+      "content": "comment2"
+    }
+  ]
+}

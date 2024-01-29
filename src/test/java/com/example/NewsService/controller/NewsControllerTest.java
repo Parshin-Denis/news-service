@@ -1,15 +1,13 @@
 package com.example.NewsService.controller;
 
 import com.example.NewsService.AbstractTest;
+import com.example.NewsService.StringTestUtils;
 import com.example.NewsService.dto.UpsertNewsRequest;
-import com.example.NewsService.mapper.NewsMapper;
 import com.example.NewsService.model.News;
-import com.example.NewsService.repository.CategoryRepository;
 import com.example.NewsService.repository.NewsRepository;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -24,13 +22,7 @@ public class NewsControllerTest extends AbstractTest {
     @Autowired
     protected NewsRepository newsRepository;
 
-    @Autowired
-    protected CategoryRepository categoryRepository;
-
-    @Autowired
-    protected NewsMapper newsMapper;
-
-    public static final long ID_NEWS_TO_TEST = 4;
+    public static final long ID_NEWS_TO_TEST = 1;
 
     @Test
     @WithMockUser
@@ -40,10 +32,9 @@ public class NewsControllerTest extends AbstractTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        String expectedResponse = objectMapper.writeValueAsString(
-                newsMapper.newsListToNewsListResponse(
-                        newsRepository.findAll(PageRequest.of(0, 20)).getContent())
-        );
+
+        String expectedResponse = StringTestUtils.readStringFromResource("response/find_all_news.json");
+
         JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
     }
 
@@ -55,11 +46,9 @@ public class NewsControllerTest extends AbstractTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        String expectedResponse = objectMapper.writeValueAsString(
-                newsMapper.singleNewsToResponse(
-                        newsRepository.findById(ID_NEWS_TO_TEST).orElseThrow()
-                )
-        );
+
+        String expectedResponse = StringTestUtils.readStringFromResource("response/find_news_by_id.json");
+
         JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
     }
 
@@ -78,19 +67,15 @@ public class NewsControllerTest extends AbstractTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        News newsCreated = new News();
-        newsCreated.setContent(request.getContent());
-        newsCreated.setUser(userRepository.findByName("User").orElseThrow());
-        newsCreated.setCategory(categoryRepository.findById(request.getCategoryId()).orElseThrow());
-        String expectedResponse = objectMapper.writeValueAsString(
-                newsMapper.singleNewsToResponse(newsCreated)
-        );
-        JsonAssert.assertJsonEquals(expectedResponse, actualResponse, JsonAssert.whenIgnoringPaths("id"));
+
+        String expectedResponse = StringTestUtils.readStringFromResource("response/create_news.json");
+
+        JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
         assertEquals(6, newsRepository.count());
     }
 
     @Test
-    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceImpl", value = "User",
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceImpl", value = "Admin",
             setupBefore = TestExecutionEvent.TEST_EXECUTION)
     public void whenUpdateNews_thenReturnNews() throws Exception {
         News newsToUpdate = newsRepository.findById(ID_NEWS_TO_TEST).orElseThrow();
@@ -105,21 +90,34 @@ public class NewsControllerTest extends AbstractTest {
                 .getResponse()
                 .getContentAsString();
 
-        newsToUpdate.setContent(request.getContent());
-        newsToUpdate.setCategory(categoryRepository.findById(request.getCategoryId()).orElseThrow());
-        String expectedResponse = objectMapper.writeValueAsString(
-                newsMapper.singleNewsToResponse(newsToUpdate)
-        );
+        String expectedResponse = StringTestUtils.readStringFromResource("response/update_news.json");
+
         JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceImpl", value = "Admin",
+            setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    public void whenDeleteNews_thenReturnNoContent() throws Exception {
+        assertEquals(5, newsRepository.count());
+
+        mockMvc.perform(delete("/api/news/{id}", ID_NEWS_TO_TEST))
+                .andExpect(status().isNoContent());
+
+        assertEquals(4, newsRepository.count());
     }
 
     @Test
     @WithUserDetails(userDetailsServiceBeanName = "userDetailsServiceImpl", value = "User",
             setupBefore = TestExecutionEvent.TEST_EXECUTION)
-    public void whenDeleteNews_thenReturnNoContent() throws Exception {
-        assertEquals(5, newsRepository.count());
-        mockMvc.perform(delete("/api/news/{id}", ID_NEWS_TO_TEST))
-                .andExpect(status().isNoContent());
-        assertEquals(4, newsRepository.count());
+    public void whenNotOwnerDeleteNews_thenReturnNok() throws Exception {
+        var response = mockMvc.perform(delete("/api/news/{id}", ID_NEWS_TO_TEST))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse();
+        response.setCharacterEncoding("UTF-8");
+        String actualResponse = response.getContentAsString();
+        String expectedResponse = StringTestUtils.readStringFromResource("response/bad_owner.json");
+        JsonAssert.assertJsonEquals(expectedResponse, actualResponse);
     }
 }

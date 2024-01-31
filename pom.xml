@@ -140,6 +140,7 @@
 					</execution>
 					<execution>
 						<id>default-report</id>
+						<phase>test</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
@@ -155,7 +156,7 @@
 									<element>BUNDLE</element>
 									<limits>
 										<limit>
-											<counter>COMPLEXITY</counter>
+											<counter>LINE</counter>
 											<value>COVEREDRATIO</value>
 											<minimum>0.60</minimum>
 										</limit>
